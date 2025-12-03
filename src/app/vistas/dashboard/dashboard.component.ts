@@ -2,7 +2,8 @@ import { ChangeDetectionStrategy, Component, signal, inject, OnInit } from '@ang
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SucursalesService } from '../../services/sucursales.service';
-import { Sucursal } from '../../models/api.models';
+import { UsuariosService } from '../../services/usuarios.service';
+import { Sucursal, Usuario } from '../../models/api.models';
 
 @Component({
   selector: 'app-dashboard',
@@ -14,9 +15,11 @@ import { Sucursal } from '../../models/api.models';
 })
 export class DashboardComponent implements OnInit {
   private sucursalesService = inject(SucursalesService);
+  private usuariosService = inject(UsuariosService);
 
   // Lista de sucursales
   sucursales = signal<Sucursal[]>([]);
+  agentes = signal<Usuario[]>([]);
   isLoading = signal(false);
 
   // Control del modal
@@ -34,6 +37,7 @@ export class DashboardComponent implements OnInit {
 
   ngOnInit(): void {
     this.cargarSucursales();
+    this.cargarAgentes();
   }
 
   /**
@@ -50,6 +54,22 @@ export class DashboardComponent implements OnInit {
         console.error('Error al cargar sucursales:', error);
         alert('Error al cargar sucursales');
         this.isLoading.set(false);
+      }
+    });
+  }
+
+  /**
+   * Cargar agentes desde la API (usuarios con role_id = 2)
+   */
+  cargarAgentes(): void {
+    this.usuariosService.getAll().subscribe({
+      next: (usuarios) => {
+        // Filtrar solo agentes (role_id = 2)
+        const agentes = usuarios.filter(u => u.role_id === 2);
+        this.agentes.set(agentes);
+      },
+      error: (error) => {
+        console.error('Error al cargar agentes:', error);
       }
     });
   }

@@ -46,8 +46,10 @@ export class AuthService {
           this.currentUser.set(user);
           this.isAuthenticated.set(true);
         },
-        error: () => {
-          this.logout();
+        error: (err) => {
+          // Si el token es inválido o expiró, limpiar sesión silenciosamente
+          console.warn('Token inválido o expirado, limpiando sesión:', err);
+          this.clearSession();
         }
       });
     }
@@ -64,7 +66,10 @@ export class AuthService {
           this.requires2FA.set(true);
           this.userEmail.set(response.email);
         } else if ('token' in response) {
-          // Login directo sin 2FA (por si lo desactivas)
+          // Login directo sin 2FA - Verificar que sea administrador
+          if (response.user.role_id !== 1) {
+            throw new Error('Acceso denegado. Solo los administradores pueden acceder a este panel.');
+          }
           this.setToken(response.token);
           this.currentUser.set(response.user);
           this.isAuthenticated.set(true);
@@ -80,6 +85,10 @@ export class AuthService {
   verify2FA(request: Verify2FARequest): Observable<LoginResponse> {
     return this.http.post<LoginResponse>(`${this.apiUrl}/login/verify-2fa`, request).pipe(
       tap(response => {
+        // Verificar que sea administrador
+        if (response.user.role_id !== 1) {
+          throw new Error('Acceso denegado. Solo los administradores pueden acceder a este panel.');
+        }
         this.setToken(response.token);
         this.currentUser.set(response.user);
         this.isAuthenticated.set(true);

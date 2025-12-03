@@ -2,7 +2,8 @@ import { ChangeDetectionStrategy, Component, signal, inject, OnInit } from '@ang
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UsuariosService } from '../../services/usuarios.service';
-import { Usuario } from '../../models/api.models';
+import { SucursalesService } from '../../services/sucursales.service';
+import { Usuario, Sucursal } from '../../models/api.models';
 
 @Component({
   selector: 'app-usuarios',
@@ -14,9 +15,11 @@ import { Usuario } from '../../models/api.models';
 })
 export class UsuariosComponent implements OnInit {
   private usuariosService = inject(UsuariosService);
+  private sucursalesService = inject(SucursalesService);
 
   // Lista de usuarios
   usuarios = signal<Usuario[]>([]);
+  sucursales = signal<Sucursal[]>([]);
   isLoading = signal(false);
 
   // Control del modal
@@ -27,12 +30,13 @@ export class UsuariosComponent implements OnInit {
   usuarioForm: Partial<Usuario> & { password?: string } = {
     name: '',
     email: '',
-    role_id: 3, // Usuario por defecto
+    role_id: 2, // Agente por defecto
     sucursal_id: null
   };
 
   ngOnInit(): void {
     this.cargarUsuarios();
+    this.cargarSucursales();
   }
 
   /**
@@ -53,6 +57,20 @@ export class UsuariosComponent implements OnInit {
     });
   }
 
+  /**
+   * Cargar sucursales desde la API
+   */
+  cargarSucursales(): void {
+    this.sucursalesService.getAll().subscribe({
+      next: (sucursales) => {
+        this.sucursales.set(sucursales);
+      },
+      error: (error) => {
+        console.error('Error al cargar sucursales:', error);
+      }
+    });
+  }
+
   // Abrir modal para crear nuevo usuario
   abrirModalCrear(): void {
     this.modoEdicion.set(false);
@@ -60,7 +78,7 @@ export class UsuariosComponent implements OnInit {
       name: '',
       email: '',
       password: '',
-      role_id: 3,
+      role_id: 2, // Siempre Agente
       sucursal_id: null
     };
     this.mostrarModal.set(true);
