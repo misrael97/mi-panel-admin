@@ -35,7 +35,7 @@ export class AppComponent {
   resendCountdown = signal(0);
 
   // Estado para controlar si la barra lateral está abierta o cerrada
-  isSidebarOpen = signal(false); // Cerrado por defecto en móvil
+  isSidebarOpen = signal(true);
   // Estado para rastrear la sección activa
   activeSection = signal<string>('Dashboard');
 
@@ -60,9 +60,9 @@ export class AppComponent {
     // Escucha el evento de redimensionamiento de la ventana para actualizar isMobile
     window.addEventListener('resize', () => {
       this.isMobile.set(window.innerWidth < 768);
-      // Cerrar el menú móvil cuando se cambia a desktop
-      if (!this.isMobile() && this.isSidebarOpen()) {
-        this.isSidebarOpen.set(false);
+      // Cierra la barra lateral en móvil si se abre la vista de escritorio
+      if (!this.isMobile() && !this.isSidebarOpen()) {
+        this.isSidebarOpen.set(true);
       }
     });
   }

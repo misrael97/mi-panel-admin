@@ -125,84 +125,102 @@
 </div>
 
 <!-- Panel Administrativo (Visible solo si está autenticado) -->
-<div *ngIf="isAuthenticated()" class="min-h-screen bg-gray-100">
+<div *ngIf="isAuthenticated()" class="min-h-screen bg-gray-100 flex transition-all duration-300">
 
-  <!-- Navbar horizontal -->
-  <nav class="sticky top-0 bg-gray-800 text-white shadow-xl z-30">
-    <div class="px-4 h-16 flex items-center justify-between">
-      <!-- Logo/Título -->
-      <div class="flex items-center space-x-4">
-        <span class="text-2xl font-bold tracking-wider">Admin Panel</span>
-      </div>
+  <!-- Barra lateral (Sidebar) -->
+  <aside [class.w-64]="isSidebarOpen()" [class.w-20]="!isSidebarOpen()"
+    [class.-translate-x-full]="!isSidebarOpen() && isMobile()"
+    class="fixed inset-y-0 left-0 bg-gray-800 text-white shadow-xl z-30 transition-all duration-300 md:translate-x-0"
+    (click)="!isSidebarOpen() && isMobile() ? toggleSidebar() : null">
+    <div class="p-4 flex items-center justify-center h-16 border-b border-gray-700">
+      <span *ngIf="isSidebarOpen()" class="text-2xl font-bold tracking-wider">
+        Admin Panel
+      </span>
+      <!-- Icono de marca cuando está cerrado -->
+      <svg *ngIf="!isSidebarOpen()" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+        class="lucide lucide-layout-dashboard">
+        <rect width="7" height="9" x="3" y="3" rx="1" />
+        <rect width="7" height="5" x="14" y="3" rx="1" />
+        <rect width="7" height="9" x="14" y="12" rx="1" />
+        <rect width="7" height="5" x="3" y="16" rx="1" />
+      </svg>
+    </div>
 
-      <!-- Navegación central -->
-      <div class="hidden md:flex items-center space-x-2">
-        <a *ngFor="let item of navItems" (click)="setActiveSection(item.id)"
-          [class.bg-blue-600]="activeSection() === item.id" [class.hover:bg-gray-700]="activeSection() !== item.id"
-          class="flex items-center rounded-lg px-4 py-2 cursor-pointer transition duration-200">
-          <svg [innerHTML]="item.icon" class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor"
-            viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" stroke-width="2" stroke-linecap="round"
-            stroke-linejoin="round"></svg>
-          <span class="ml-2 whitespace-nowrap text-sm font-medium">{{ item.name }}</span>
-        </a>
-      </div>
+    <nav class="flex flex-col p-2 space-y-1">
+      <a *ngFor="let item of navItems" (click)="setActiveSection(item.id)"
+        [class.bg-blue-600]="activeSection() === item.id" [class.hover:bg-gray-700]="activeSection() !== item.id"
+        class="flex items-center rounded-lg p-3 cursor-pointer transition duration-200" [title]="item.name">
+        <!-- Icono del elemento de navegación (usando SVG inline de Lucide Icons) -->
+        <svg [innerHTML]="item.icon" class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></svg>
 
-      <!-- Acciones del usuario -->
-      <div class="flex items-center space-x-3">
-        <button class="p-2 rounded-full hover:bg-gray-700 transition duration-150">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M18.36 17.5a2 2 0 0 0-2.83 0L12 20l-3.53-2.5a2 2 0 0 0-2.83 0A8 8 0 1 1 18.36 17.5z" />
-            <path d="M12 4v4" />
-          </svg>
-        </button>
-        <div class="w-9 h-9 bg-blue-500 rounded-full flex items-center justify-center text-white font-medium text-sm">
-          AD
-        </div>
-        <button (click)="logout()" title="Cerrar Sesión"
-          class="flex items-center px-3 py-2 text-red-400 hover:bg-gray-700 rounded-lg transition duration-200">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-            <polyline points="16 17 21 12 16 7" />
-            <line x1="21" x2="9" y1="12" y2="12" />
-          </svg>
-          <span class="ml-2 text-sm font-medium hidden lg:inline">Cerrar Sesión</span>
-        </button>
-      </div>
+        <!-- Nombre del elemento (solo visible si el sidebar está abierto) -->
+        <span *ngIf="isSidebarOpen()" class="ml-4 whitespace-nowrap text-sm font-medium">
+          {{ item.name }}
+        </span>
+      </a>
+    </nav>
 
-      <!-- Menú móvil (hamburger) -->
-      <button (click)="toggleSidebar()" class="md:hidden p-2 rounded-full hover:bg-gray-700 transition duration-150">
+    <!-- Botón de Cerrar Sesión -->
+    <button (click)="logout()"
+      class="absolute bottom-4 left-0 w-full flex items-center p-3 text-red-400 hover:bg-gray-700 transition duration-200"
+      [title]="isSidebarOpen() ? 'Cerrar Sesión' : 'Salir'">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+        class="lucide lucide-log-out">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+        <polyline points="16 17 21 12 16 7" />
+        <line x1="21" x2="9" y1="12" y2="12" />
+      </svg>
+      <span *ngIf="isSidebarOpen()" class="ml-4 whitespace-nowrap text-sm font-medium">
+        Cerrar Sesión
+      </span>
+    </button>
+  </aside>
+
+  <!-- Overlay para móviles cuando el sidebar está abierto -->
+  <div *ngIf="isSidebarOpen() && isMobile()" (click)="toggleSidebar()"
+    class="fixed inset-0 bg-black opacity-50 z-20 md:hidden"></div>
+
+  <!-- Contenido Principal -->
+  <div [class.md:ml-64]="isSidebarOpen()" [class.md:ml-20]="!isSidebarOpen()"
+    class="flex-1 transition-all duration-300 ml-0">
+
+    <!-- Barra superior (Header) -->
+    <header class="sticky top-0 bg-white shadow-md z-10 h-16 flex items-center justify-between px-4">
+
+      <!-- Botón de alternancia de la barra lateral -->
+      <button (click)="toggleSidebar()"
+        class="p-2 rounded-full hover:bg-gray-100 focus:outline-none transition duration-150">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+          class="lucide lucide-menu">
           <line x1="4" x2="20" y1="12" y2="12" />
           <line x1="4" x2="20" y1="6" y2="6" />
           <line x1="4" x2="20" y1="18" y2="18" />
         </svg>
       </button>
-    </div>
 
-    <!-- Menú móvil desplegable -->
-    <div *ngIf="isSidebarOpen() && isMobile()" class="md:hidden border-t border-gray-700">
-      <div class="flex flex-col p-2 space-y-1">
-        <a *ngFor="let item of navItems" (click)="setActiveSection(item.id)"
-          [class.bg-blue-600]="activeSection() === item.id" [class.hover:bg-gray-700]="activeSection() !== item.id"
-          class="flex items-center rounded-lg p-3 cursor-pointer transition duration-200">
-          <svg [innerHTML]="item.icon" class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor"
-            viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" stroke-width="2" stroke-linecap="round"
-            stroke-linejoin="round"></svg>
-          <span class="ml-3 whitespace-nowrap text-sm font-medium">{{ item.name }}</span>
-        </a>
+      <!-- Título de la sección actual -->
+      <h1 class="text-xl font-semibold text-gray-800">{{ activeSectionTitle() }}</h1>
+
+      <!-- Perfil de usuario / Notificaciones -->
+      <div class="flex items-center space-x-3">
+        <button class="p-2 rounded-full hover:bg-gray-100 transition duration-150">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+            class="lucide lucide-bell">
+            <path d="M18.36 17.5a2 2 0 0 0-2.83 0L12 20l-3.53-2.5a2 2 0 0 0-2.83 0A8 8 0 1 1 18.36 17.5z" />
+            <path d="M12 4v4" />
+          </svg>
+        </button>
+        <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-medium">
+          AD
+        </div>
       </div>
-    </div>
-  </nav>
+    </header>
 
-  <!-- Overlay para móviles cuando el menú está abierto -->
-  <div *ngIf="isSidebarOpen() && isMobile()" (click)="toggleSidebar()"
-    class="fixed inset-0 bg-black opacity-50 z-20 md:hidden"></div>
-
-  <!-- Contenido Principal -->
-  <div class="flex-1">
     <!-- Área de Contenido Dinámico -->
     <main class="p-6 md:p-10">
       <!-- Dashboard (CRUD de Sucursales) -->
