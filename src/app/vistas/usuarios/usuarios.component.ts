@@ -41,12 +41,15 @@ export class UsuariosComponent implements OnInit {
 
   /**
    * Cargar usuarios desde la API
+   * ✅ Filtrar SOLO usuarios con role_id = 2 (Agentes)
    */
   cargarUsuarios(): void {
     this.isLoading.set(true);
     this.usuariosService.getAll().subscribe({
       next: (usuarios) => {
-        this.usuarios.set(usuarios);
+        // 🔒 FILTRAR SOLO AGENTES (role_id = 2)
+        const soloAgentes = usuarios.filter(u => u.role_id === 2);
+        this.usuarios.set(soloAgentes);
         this.isLoading.set(false);
       },
       error: (error) => {
