@@ -47,9 +47,11 @@ export class AuthService {
           this.isAuthenticated.set(true);
         },
         error: (err) => {
-          // Si el token es inválido o expiró, limpiar sesión silenciosamente
-          console.warn('Token inválido o expirado, limpiando sesión:', err);
-          this.clearSession();
+          // ✅ Solo limpiar el token, NO hacer logout (evita redirigir al login)
+          console.warn('Token inválido o expirado, limpiando token:', err);
+          localStorage.removeItem(this.tokenKey);
+          this.currentUser.set(null);
+          this.isAuthenticated.set(false);
         }
       });
     }
