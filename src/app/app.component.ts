@@ -78,6 +78,21 @@ export class AppComponent {
     return this.navItems.find(item => item.id === this.activeSection())?.name || 'Panel Administrativo';
   });
 
+  // Iniciales del usuario autenticado
+  userInitials = computed(() => {
+    const user = this.authService.currentUser();
+    if (!user || !user.name) return 'AD';
+
+    const names = user.name.trim().split(' ');
+    if (names.length === 1) {
+      // Si solo hay un nombre, tomar las dos primeras letras
+      return names[0].substring(0, 2).toUpperCase();
+    } else {
+      // Si hay dos o más nombres, tomar la primera letra de cada uno
+      return (names[0][0] + names[1][0]).toUpperCase();
+    }
+  });
+
   // Función para alternar la barra lateral
   toggleSidebar(): void {
     this.isSidebarOpen.update(value => !value);
